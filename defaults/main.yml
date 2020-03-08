@@ -1,0 +1,17 @@
+---
+nginx_doc_dir: /var/www/html
+nginx_etc_dir: /etc/nginx
+nginx_log_dir: /var/log/nginx
+nginx_ssl_dir: /etc/ssl/nginx
+nginx_group: adm
+nginx_packages: ['nginx']
+nginx_run: www-data
+
+nginx_dirs:
+- {name: '{{nginx_doc_dir}}', mode: '0755'}
+- {name: '{{nginx_log_dir}}', mode: '0755'}
+- {name: '{{nginx_ssl_dir}}', mode: '0700'}
+
+nginx_vhosts: []
+# {name: www.example.com, ssl: true}
+...

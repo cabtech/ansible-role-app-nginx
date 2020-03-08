@@ -1,0 +1,24 @@
+server {
+    server_name {{item.name}};
+{% if item.ssl == True %}
+    listen 443;
+
+    ssl    on;
+    ssl_certificate     {{nginx_ssl_dir}}/{{item.name}}.bundle.pem;
+    ssl_certificate_key {{nginx_ssl_dir}}/{{item.name}}.key;
+{% else %}
+    listen 80;
+
+{% endif %}
+    access_log {{nginx_log_dir}}/{{item.name}}/access.log;
+    error_log {{nginx_log_dir}}/{{item.name}}/error.log;
+    location / {
+{% if item.docroot is defined %}
+        root {{item.docroot}};
+{% else %}
+        root {{nginx_doc_dir}}/{{item.name}};
+{% endif %}
+        index index.html;
+        autoindex on;
+    }
+}

@@ -1,0 +1,119 @@
+---
+# --------------------------------
+
+- name: 'install packages'
+  apt:
+    name: '{{nginx_packages}}'
+    state: present
+  become: true
+  tags: ct-nginx
+
+- name: 'create base directories'
+  file:
+    path: '{{item.name}}'
+    state: directory
+    mode: '{{item.mode}}'
+  with_items:
+  - '{{nginx_dirs}}'
+  become: true
+  tags: ct-nginx
+
+- name: 'create docroot'
+  file:
+    path: '{{item.docroot}}'
+    state: directory
+    mode: '0755'
+  with_items:
+  - '{{nginx_vhosts}}'
+  become: true
+  tags: ct-nginx
+
+- name: 'create CSS directory'
+  file:
+    path: '{{item.docroot}}/css'
+    state: directory
+    mode: '0755'
+  with_items:
+  - '{{nginx_vhosts}}'
+  become: true
+  tags: ct-nginx
+
+- name: 'create log dirs'
+  file:
+    path: '{{nginx_log_dir}}/{{item.name}}'
+    state: directory
+    owner: '{{nginx_run}}'
+    group: '{{nginx_group}}'
+    mode: '0755'
+  with_items:
+  - '{{nginx_vhosts}}'
+  become: true
+  tags: ct-nginx
+
+- name: 'install virtual host config'
+  template:
+    src: vhost.conf.j2
+    dest: /etc/nginx/sites-available/{{item.name}}.conf
+    mode: '0644'
+  with_items:
+  - '{{nginx_vhosts}}'
+  become: true
+  notify: handler_restart_nginx
+  tags: ct-nginx
+
+- name: 'add nginx landing page'
+  template:
+    src: index.html.j2
+    dest: '{{item.docroot}}/index.html'
+    owner: '{{nginx_run}}'
+    group: '{{nginx_group}}'
+    mode: '0644'
+  with_items:
+  - '{{nginx_vhosts}}'
+  become: true
+  tags: ct-nginx
+
+- name: 'copy css'
+  copy:
+    src: basic.css
+    dest: '{{item.docroot}}/css'
+    owner: '{{nginx_run}}'
+    group: '{{nginx_group}}'
+    mode: '0644'
+  with_items:
+  - '{{nginx_vhosts}}'
+  become: true
+  tags: ct-nginx
+
+- name: 'copy favicon'
+  copy:
+    src: favicon.ico
+    dest: '{{item.docroot}}'
+    owner: '{{nginx_run}}'
+    group: '{{nginx_group}}'
+    mode: '0644'
+  with_items:
+  - '{{nginx_vhosts}}'
+  become: true
+  tags: ct-nginx
+
+- name: 'enable vhosts'
+  file:
+    state: link
+    src: ../sites-available/{{item.name}}.conf
+    dest: /etc/nginx/sites-enabled/{{item.name}}.conf
+  with_items:
+  - '{{nginx_vhosts}}'
+  become: true
+  tags: ct-nginx
+
+- name: 'enable and start service'
+  service:
+    name: nginx
+    enabled: true
+    state: started
+  become: true
+  tags: ct-nginx
+
+# --------------------------------
+...
