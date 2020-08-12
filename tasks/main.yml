@@ -50,6 +50,37 @@
   become: true
   tags: ct-nginx
 
+- name: 'install default server config'
+  template:
+    src: default_server.j2
+    dest: /etc/nginx/sites-available/default
+    mode: '0644'
+  when: nginx_default_server is defined
+  become: true
+  notify: handler_restart_nginx
+  tags: ct-nginx
+
+- name: 'enable default server'
+  file:
+    src: ../sites-available/default
+    state: link
+    dest: /etc/nginx/sites-enabled/default
+  with_items:
+  - '{{nginx_vhosts}}'
+  become: true
+  tags: ct-nginx
+
+- name: 'add default server landing page'
+  template:
+    src: index.html.j2
+    dest: '{{nginx_default_server.docroot}}/index.html'
+    owner: '{{nginx_run}}'
+    group: '{{nginx_group}}'
+    mode: '0644'
+  when: nginx_default_server is defined
+  become: true
+  tags: ct-nginx
+
 - name: 'install virtual host config'
   template:
     src: vhost.conf.j2
@@ -99,8 +130,8 @@
 
 - name: 'enable vhosts'
   file:
-    state: link
     src: ../sites-available/{{item.name}}.conf
+    state: link
     dest: /etc/nginx/sites-enabled/{{item.name}}.conf
   with_items:
   - '{{nginx_vhosts}}'

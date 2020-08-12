@@ -1,14 +1,19 @@
 <!DOCTYPE html>
+{% if item is defined and item.title is defined %}
+{% set TITLE=item.title %}
+{% else %}
+{% set TITLE='Apt Mirror' %}
+{% endif %}
 <html lang="en-GB">
 	<head>
 		<meta charset="utf-8" />
 		<meta http-equiv="Content-Type" content="text/html" />
 		<link rel="stylesheet" href="/css/basic.css" />
-		<title>{{item.name.split('.')[0]}}</title>
+		<title>{{TITLE}}</title>
 	</head>
 	<body>
 		<hr />
-		<p>This is {{item.name}}</p>
+		<p>This is {{TITLE}}</p>
 		<hr />
 	</body>
 </html>
