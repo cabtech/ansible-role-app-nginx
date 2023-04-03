@@ -1,12 +1,11 @@
 server {
     server_name {{ item.fqdn }};
 {% if item.ssl == true %}
-    listen {{ nginx_port }};
-    ssl on;
-    ssl_certificate     {{ nginx_ssl_dir }}/{{ item.fqdn }}.{{ nginx_ssl_cert }};
-    ssl_certificate_key {{ nginx_ssl_dir }}/{{ item.fqdn }}.{{ nginx_ssl_prikey }};
+    listen {{ nginx_port }} ssl;
+    ssl_certificate     {{ nginx_ssl_dir }}/{{ item.fqdn }}/{{ nginx_ssl_cert }};
+    ssl_certificate_key {{ nginx_ssl_dir }}/{{ item.fqdn }}/{{ nginx_ssl_prikey }};
 {% else %}
-    listen 80;
+    listen {{ nginx_port }};
 {% endif %}
     access_log {{ nginx_log_dir }}/{{ item.shortname }}/access.log;
     error_log {{ nginx_log_dir }}/{{ item.shortname }}/error.log;
