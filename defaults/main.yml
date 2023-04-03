@@ -1,17 +1,25 @@
 ---
+# --------------------------------
+
 nginx_doc_dir: /var/www/html
 nginx_etc_dir: /etc/nginx
-nginx_log_dir: /var/log/nginx
-nginx_ssl_dir: /etc/ssl/nginx
 nginx_group: adm
-nginx_packages: ['nginx']
+nginx_log_dir: /var/log/nginx
+nginx_packages: ["nginx"]
+nginx_port: 443
+nginx_ssl_cert: fullchain.pem
+nginx_ssl_dir: /etc/letsencrypt/live
+nginx_ssl_prikey: privkey.pem
 nginx_run: www-data
+nginx_svc_enabled: true
+nginx_svc_name: nginx
+nginx_svc_state: started
+nginx_vhosts: []
 
 nginx_dirs:
-- {name: '{{nginx_doc_dir}}', mode: '0755'}
-- {name: '{{nginx_log_dir}}', mode: '0755'}
-- {name: '{{nginx_ssl_dir}}', mode: '0700'}
+- {group: "{{ nginx_group }}", mode: "0755", owner: "{{ nginx_run }}", path: "{{ nginx_doc_dir }}"}
+- {group: "{{ nginx_group }}", mode: "0755", owner: "{{ nginx_run }}", path: "{{ nginx_log_dir }}"}
+- {group: "{{ nginx_group }}", mode: "0700", owner: "{{ nginx_run }}", path: "{{ nginx_ssl_dir }}"}
 
-nginx_vhosts: []
-# {name: www.example.com, ssl: true}
+# --------------------------------
 ...
