@@ -10,16 +10,16 @@ nginx_port: 443
 nginx_ssl_cert: fullchain.pem
 nginx_ssl_dir: /etc/letsencrypt/live
 nginx_ssl_prikey: privkey.pem
-nginx_run: www-data
+nginx_runtime: www-data
 nginx_svc_enabled: true
 nginx_svc_name: nginx
 nginx_svc_state: started
 nginx_vhosts: []
 
 nginx_dirs:
-- {group: "{{ nginx_group }}", mode: "0755", owner: "{{ nginx_run }}", path: "{{ nginx_doc_dir }}"}
-- {group: "{{ nginx_group }}", mode: "0755", owner: "{{ nginx_run }}", path: "{{ nginx_log_dir }}"}
-- {group: "{{ nginx_group }}", mode: "0700", owner: "{{ nginx_run }}", path: "{{ nginx_ssl_dir }}"}
+- {group: "{{ nginx_group }}", mode: "0755", owner: "{{ nginx_runtime }}", path: "{{ nginx_doc_dir }}"}
+- {group: "{{ nginx_group }}", mode: "0755", owner: "{{ nginx_runtime }}", path: "{{ nginx_log_dir }}"}
+- {group: "{{ nginx_group }}", mode: "0700", owner: "{{ nginx_runtime }}", path: "{{ nginx_ssl_dir }}"}
 
 # --------------------------------
 ...

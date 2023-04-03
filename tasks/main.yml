@@ -41,7 +41,7 @@
   ansible.builtin.file:
     group: "{{ nginx_group }}"
     mode: "0755"
-    owner: "{{ nginx_run }}"
+    owner: "{{ nginx_runtime }}"
     path: "{{ nginx_log_dir }}/{{ item.shortname }}"
     state: directory
   loop: "{{ nginx_vhosts }}"
@@ -92,7 +92,7 @@
   ansible.builtin.template:
     src: index.html.j2
     dest: "{{ item.docroot }}/index.html"
-    owner: "{{ nginx_run }}"
+    owner: "{{ nginx_runtime }}"
     group: "{{ nginx_group }}"
     mode: "0644"
   loop: "{{ nginx_vhosts }}"
@@ -103,7 +103,7 @@
   ansible.builtin.copy:
     src: basic.css
     dest: "{{ item.docroot }}/css"
-    owner: "{{ nginx_run }}"
+    owner: "{{ nginx_runtime }}"
     group: "{{ nginx_group }}"
     mode: "0644"
   loop: "{{ nginx_vhosts }}"
@@ -115,7 +115,7 @@
     dest: "{{ item.docroot }}"
     group: "{{ nginx_group }}"
     mode: "0644"
-    owner: "{{ nginx_run }}"
+    owner: "{{ nginx_runtime }}"
     src: favicon.ico
   loop: "{{ nginx_vhosts }}"
   become: true
@@ -127,6 +127,14 @@
     src: ../sites-available/{{ item.shortname }}.conf
     state: link
   loop: "{{ nginx_vhosts }}"
+  become: true
+  tags: ["ct-nginx"]
+
+- name: "Add runtime account to its group"
+  ansible.builtin.user:
+    append: true
+    groups: "{{ nginx_group }}"
+    name: "{{ nginx_runtime }}"
   become: true
   tags: ["ct-nginx"]
 
