@@ -48,41 +48,46 @@
   become: true
   tags: ["ct-nginx"]
 
-- name: "Install default server config"
-  ansible.builtin.template:
-    dest: /etc/nginx/sites-available/default
-    mode: "0644"
-    src: default_server.j2
-  when: nginx_default_server is defined
-  become: true
-  notify: HandlerRestartNginx
-  tags: ["ct-nginx"]
-
-- name: "Enable default server"
-  ansible.builtin.file:
-    dest: /etc/nginx/sites-enabled/default
-    src: ../sites-available/default
-    state: link
-  loop: "{{ nginx_vhosts }}"
-  become: true
-  tags: ["ct-nginx"]
-
-- name: "Add default server landing page"
-  ansible.builtin.template:
-    src: index.html.j2
-    dest: "{{ nginx_default_server.docroot }}/index.html"
-    owner: "{{ nginx_run }}"
-    group: "{{ nginx_group }}"
-    mode: "0644"
+- name: "BLOCK : default server setup"
   when: nginx_default_server is defined
   become: true
   tags: ["ct-nginx"]
+  block:
+  - name: "Install default server config"
+    ansible.builtin.template:
+      dest: /etc/nginx/sites-available/default
+      mode: "0644"
+      src: default_server.j2
+    notify: HandlerRestartNginx
+  - name: "Enable default server"
+    ansible.builtin.file:
+      dest: /etc/nginx/sites-enabled/default
+      src: ../sites-available/default
+      state: link
+  - name: "Add default server landing page"
+    ansible.builtin.template:
+      src: index.html.j2
+      dest: "{{ nginx_default_server.docroot }}/index.html"
+      owner: "{{ nginx_run }}"
+      group: "{{ nginx_group }}"
+      mode: "0644"
 
 - name: "Install virtual host config"
   ansible.builtin.template:
     src: vhost.conf.j2
     dest: /etc/nginx/sites-available/{{ item.shortname }}.conf
     mode: "0644"
+  loop: "{{ nginx_vhosts }}"
+  become: true
+  notify: HandlerRestartNginx
+  tags: ["ct-nginx"]
+
+- name: "Install redirect config"
+  ansible.builtin.template:
+    src: redirect.conf.j2
+    dest: /etc/nginx/sites-available/redirect-{{ item.shortname }}.conf
+    mode: "0644"
+  when: item.redirect is true
   loop: "{{ nginx_vhosts }}"
   become: true
   notify: HandlerRestartNginx
@@ -126,6 +131,16 @@
     dest: /etc/nginx/sites-enabled/{{ item.shortname }}.conf
     src: ../sites-available/{{ item.shortname }}.conf
     state: link
+  loop: "{{ nginx_vhosts }}"
+  become: true
+  tags: ["ct-nginx"]
+
+- name: "Enable vhost redirects"
+  ansible.builtin.file:
+    dest: /etc/nginx/sites-enabled/redirect-{{ item.shortname }}.conf
+    src: ../sites-available/redirect-{{ item.shortname }}.conf
+    state: link
+  when: item.redirect is true
   loop: "{{ nginx_vhosts }}"
   become: true
   tags: ["ct-nginx"]

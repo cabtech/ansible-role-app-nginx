@@ -1,0 +1,5 @@
+server {
+    listen {{ nginx_http_port }};
+    server_name {{ item.fqdn }};
+    return 301 https://$host$request_uri;
+}

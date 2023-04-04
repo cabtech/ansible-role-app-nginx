@@ -4,6 +4,8 @@
 nginx_doc_dir: /var/www/html
 nginx_etc_dir: /etc/nginx
 nginx_group: adm
+nginx_http_port: 80
+nginx_https_port: 443
 nginx_log_dir: /var/log/nginx
 nginx_packages: ["nginx"]
 nginx_port: 443
