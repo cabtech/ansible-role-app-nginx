@@ -8,6 +8,14 @@
   become: true
   tags: ["ct-nginx"]
 
+- name: "Add runtime account to its group"
+  ansible.builtin.user:
+    append: true
+    groups: "{{ nginx_group }}"
+    name: "{{ nginx_runtime }}"
+  become: true
+  tags: ["ct-nginx"]
+
 - name: "Create base directories"
   ansible.builtin.file:
     group: "{{ item.group }}"
@@ -49,7 +57,7 @@
   tags: ["ct-nginx"]
 
 - name: "BLOCK : default server setup"
-  when: nginx_default_server is defined
+  when: false  # FOR REMOVAL was: nginx_default_server is true
   become: true
   tags: ["ct-nginx"]
   block:
@@ -93,7 +101,7 @@
   notify: HandlerRestartNginx
   tags: ["ct-nginx"]
 
-- name: "Add nginx landing page"
+- name: "Add landing page"
   ansible.builtin.template:
     src: index.html.j2
     dest: "{{ item.docroot }}/index.html"
@@ -101,6 +109,7 @@
     group: "{{ nginx_group }}"
     mode: "0644"
   loop: "{{ nginx_vhosts }}"
+  when: (item.add_landing_page | default(false))
   become: true
   tags: ["ct-nginx"]
 
@@ -132,6 +141,8 @@
     src: ../sites-available/{{ item.shortname }}.conf
     state: link
   loop: "{{ nginx_vhosts }}"
+  when: (item.enabled | default(false))
+  notify: HandlerRestartNginx
   become: true
   tags: ["ct-nginx"]
 
@@ -140,16 +151,26 @@
     dest: /etc/nginx/sites-enabled/redirect-{{ item.shortname }}.conf
     src: ../sites-available/redirect-{{ item.shortname }}.conf
     state: link
-  when: item.redirect is true
   loop: "{{ nginx_vhosts }}"
+  when: item.redirect is true
   become: true
   tags: ["ct-nginx"]
 
-- name: "Add runtime account to its group"
-  ansible.builtin.user:
-    append: true
-    groups: "{{ nginx_group }}"
-    name: "{{ nginx_runtime }}"
+- name: "Move original config aside"
+  ansible.builtin.command: /bin/mv {{ nginx_etc_dir }}/nginx.conf {{ nginx_etc_dir }}/nginx.conf.orig
+  args:
+    creates: "{{ nginx_etc_dir }}/nginx.conf.orig"
+  become: true
+  tags: ["ct-nginx"]
+
+- name: "Render main config file"
+  ansible.builtin.template:
+    dest: "{{ nginx_etc_dir }}/nginx.conf"
+    group: root
+    mode: "0644"
+    owner: root
+    src: templates/nginx.conf.j2
+  notify: HandlerRestartNginx
   become: true
   tags: ["ct-nginx"]
 

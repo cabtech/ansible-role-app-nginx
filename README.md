@@ -1,9 +1,8 @@
-# ansible-role-app-nginx
+# Install Nginx server and vhost configs
 
 ## Default variables
 | Name | Type | Value | Comments |
 | ---- | ---- | ----- | -------- |
-| nginx_default_server | Boolean | false | OK for testing |
 | nginx_dirs | list(dict) | see `defaults.yml` ||
 | nginx_doc_dir | UnixDir | `/var/www/html` ||
 | nginx_etc_dir | UnixDir | `/etc/nginx` ||
@@ -19,12 +18,30 @@
 | nginx_runtime | string | www-data ||
 | nginx_svc_enabled | Boolean | true ||
 | nginx_svc_name | string | nginx ||
-| nginx_svc_state | SystemdState | started ||
+| nginx_svc_state | SystemdState | stnginx_ssl_certarted ||
 | nginx_vhosts | list(dict) | see example below ||
 
-### Example
+### Examples
+```
 nginx_vhosts:
-  - {docroot: /NotYourRootDisk/apt-mirror/mirror/archive.ubuntu.com, fqdn: "example.io", redirect: true, shortname: handy, ssl: true}
+- docroot: /data/apt-mirror/mirror/archive.ubuntu.com
+  enabled: true
+  fqdn: "example.io"
+  port: 8888         # default nginx_port
+  redirect: true
+  shortname: handy
+  ssl:
+    cert_file: certExample.pem          # default nginx_ssl_cert
+    cert_site: omsk.testing.example.com # default item.fqdn
+    key_file: keyExample.pem            # default nginx_ssl_prikey
+    ssl_dir: /etc/example/special       # default nginx_ssl_dir
+  locations:
+  - directives:
+      autoindex: "on"  # need the quotes to avoid translation to Boolean
+      index: index.html
+      root: /var/www/ops
+    path: "/"
+```
 
 # --------------------------------
 ...

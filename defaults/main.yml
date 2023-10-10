@@ -1,7 +1,6 @@
 ---
 # --------------------------------
 
-nginx_default_server: false
 nginx_doc_dir: /var/www/html
 nginx_etc_dir: /etc/nginx
 nginx_group: adm

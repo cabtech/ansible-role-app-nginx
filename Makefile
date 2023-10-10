@@ -8,11 +8,11 @@ lint: .ylint .alint
 	yamllint --config-file .config/yamllint .
 	@touch $@
 
-# --------------------------------
-
 push: lint
-	mkdir -p /mnt/hgfs/shared/ansible-role-app-nginx
+	@mkdir -p /mnt/hgfs/shared/ansible-role-app-nginx
 	rsync -a * /mnt/hgfs/shared/ansible-role-app-nginx
+
+# --------------------------------
 
 clean:
 	@/bin/rm -f .alint .ylint

@@ -1,0 +1,28 @@
+# MANAGED_BY_ANSIBLE
+user {{ nginx_runtime }};
+worker_processes auto;
+pid /run/nginx.pid;
+include {{ nginx_etc_dir }}/modules-enabled/*.conf;
+
+events {
+	worker_connections 768;
+}
+
+http {
+	sendfile on;
+	tcp_nopush on;
+	types_hash_max_size 2048;
+
+	include {{ nginx_etc_dir }}/mime.types;
+	default_type application/octet-stream;
+
+	ssl_protocols TLSv1 TLSv1.1 TLSv1.2 TLSv1.3;
+	ssl_prefer_server_ciphers on;
+
+	access_log {{ nginx_log_dir }}/access.log;
+	error_log {{ nginx_log_dir }}/error.log;
+	gzip on;
+
+	include {{ nginx_etc_dir }}/conf.d/*.conf;
+	include {{ nginx_etc_dir }}/sites-enabled/*;
+}

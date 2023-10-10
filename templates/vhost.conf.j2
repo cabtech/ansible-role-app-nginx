@@ -1,21 +1,27 @@
 server {
     server_name {{ item.fqdn }};
-{% if item.ssl == true %}
-    listen {{ nginx_port }} ssl;
-    ssl_certificate     {{ nginx_ssl_dir }}/{{ item.fqdn }}/{{ nginx_ssl_cert }};
-    ssl_certificate_key {{ nginx_ssl_dir }}/{{ item.fqdn }}/{{ nginx_ssl_prikey }};
+{%	if item.ssl is defined %}
+{%		set CERT_FILE = item.ssl.cert_file | default(nginx_ssl_cert) %}
+{%		set KEY_FILE = item.ssl.key_file | default(nginx_ssl_prikey) %}
+{%		set CERT_SITE = item.ssl.cert_site | default(item.fqdn) %}
+{%		set SSL_DIR = item.ssl.dir | default(nginx_ssl_dir) %}
+    listen {{ item.port | default(nginx_port) }} ssl;
+
+    ssl_certificate     {{ SSL_DIR }}/{{ CERT_SITE }}/{{ CERT_FILE }};
+    ssl_certificate_key {{ SSL_DIR }}/{{ CERT_SITE }}/{{ KEY_FILE }};
 {% else %}
-    listen {{ nginx_port }};
+    listen {{ item.port | default(nginx_port) }};
 {% endif %}
+
     access_log {{ nginx_log_dir }}/{{ item.shortname }}/access.log;
     error_log {{ nginx_log_dir }}/{{ item.shortname }}/error.log;
-    location / {
-{% if item.docroot is defined %}
-        root {{ item.docroot }};
-{% else %}
-        root {{ nginx_doc_dir }}/{{ item.name }};
-{% endif %}
-        index index.html;
-        autoindex on;
+{%	for shun in (item.locations | default([])) %}
+
+    location {{ shun.path }} {
+{%		for kk, vv in shun.directives.items() %}
+        {{ kk }} {{ vv }};
+{%		endfor %}
     }
+
+{%	endfor %}
 }
