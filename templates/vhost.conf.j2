@@ -1,27 +1,34 @@
-server {
+server {  # {{ item.comment }}
     server_name {{ item.fqdn }};
+
 {%	if item.ssl is defined %}
 {%		set CERT_FILE = item.ssl.cert_file | default(nginx_ssl_cert) %}
 {%		set KEY_FILE = item.ssl.key_file | default(nginx_ssl_prikey) %}
 {%		set CERT_SITE = item.ssl.cert_site | default(item.fqdn) %}
 {%		set SSL_DIR = item.ssl.dir | default(nginx_ssl_dir) %}
     listen {{ item.port | default(nginx_port) }} ssl;
-
     ssl_certificate     {{ SSL_DIR }}/{{ CERT_SITE }}/{{ CERT_FILE }};
     ssl_certificate_key {{ SSL_DIR }}/{{ CERT_SITE }}/{{ KEY_FILE }};
-{% else %}
+{%	else %}
     listen {{ item.port | default(nginx_port) }};
-{% endif %}
+{%	endif %}
 
     access_log {{ nginx_log_dir }}/{{ item.shortname }}/access.log;
     error_log {{ nginx_log_dir }}/{{ item.shortname }}/error.log;
 {%	for shun in (item.locations | default([])) %}
 
     location {{ shun.path }} {
-{%		for kk, vv in shun.directives.items() %}
+{%		if shun.directives is defined %}
+{%			for kk, vv in shun.directives.items() %}
         {{ kk }} {{ vv }};
-{%		endfor %}
+{%			endfor %}
+{%		endif %}
+{%		if shun.redirect is defined %}
+        proxy_pass {{ shun.redirect.uri }};
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Real-IP $remote_addr;
+{%		endif %}
     }
-
-{%	endfor %}
+{%	endfor %}{# locations #}
 }

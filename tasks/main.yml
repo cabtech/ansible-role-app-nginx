@@ -33,6 +33,7 @@
     path: "{{ item.docroot }}"
     state: directory
   loop: "{{ nginx_vhosts }}"
+  when: item.docroot is defined
   become: true
   tags: ["ct-nginx"]
 
@@ -42,6 +43,45 @@
     path: "{{ item.docroot }}/css"
     state: directory
   loop: "{{ nginx_vhosts }}"
+  when: item.docroot is defined
+  become: true
+  tags: ["ct-nginx"]
+
+- name: "Add landing page"
+  ansible.builtin.template:
+    src: index.html.j2
+    dest: "{{ item.docroot }}/index.html"
+    owner: "{{ nginx_runtime }}"
+    group: "{{ nginx_group }}"
+    mode: "0644"
+  loop: "{{ nginx_vhosts }}"
+  when:
+  - item.docroot is defined
+  - (item.add_landing_page | default(false))
+  become: true
+  tags: ["ct-nginx"]
+
+- name: "Copy CSS"
+  ansible.builtin.copy:
+    src: basic.css
+    dest: "{{ item.docroot }}/css"
+    owner: "{{ nginx_runtime }}"
+    group: "{{ nginx_group }}"
+    mode: "0644"
+  loop: "{{ nginx_vhosts }}"
+  when: item.docroot is defined
+  become: true
+  tags: ["ct-nginx"]
+
+- name: "Copy favicon"
+  ansible.builtin.copy:
+    dest: "{{ item.docroot }}"
+    group: "{{ nginx_group }}"
+    mode: "0644"
+    owner: "{{ nginx_runtime }}"
+    src: favicon.ico
+  loop: "{{ nginx_vhosts }}"
+  when: item.docroot is defined
   become: true
   tags: ["ct-nginx"]
 
@@ -56,31 +96,7 @@
   become: true
   tags: ["ct-nginx"]
 
-- name: "BLOCK : default server setup"
-  when: false  # FOR REMOVAL was: nginx_default_server is true
-  become: true
-  tags: ["ct-nginx"]
-  block:
-  - name: "Install default server config"
-    ansible.builtin.template:
-      dest: /etc/nginx/sites-available/default
-      mode: "0644"
-      src: default_server.j2
-    notify: HandlerRestartNginx
-  - name: "Enable default server"
-    ansible.builtin.file:
-      dest: /etc/nginx/sites-enabled/default
-      src: ../sites-available/default
-      state: link
-  - name: "Add default server landing page"
-    ansible.builtin.template:
-      src: index.html.j2
-      dest: "{{ nginx_default_server.docroot }}/index.html"
-      owner: "{{ nginx_run }}"
-      group: "{{ nginx_group }}"
-      mode: "0644"
-
-- name: "Install virtual host config"
+- name: "Render virtual host config"
   ansible.builtin.template:
     src: vhost.conf.j2
     dest: /etc/nginx/sites-available/{{ item.shortname }}.conf
@@ -90,7 +106,7 @@
   notify: HandlerRestartNginx
   tags: ["ct-nginx"]
 
-- name: "Install redirect config"
+- name: "Render HTTP redirect config"
   ansible.builtin.template:
     src: redirect.conf.j2
     dest: /etc/nginx/sites-available/redirect-{{ item.shortname }}.conf
@@ -99,40 +115,6 @@
   loop: "{{ nginx_vhosts }}"
   become: true
   notify: HandlerRestartNginx
-  tags: ["ct-nginx"]
-
-- name: "Add landing page"
-  ansible.builtin.template:
-    src: index.html.j2
-    dest: "{{ item.docroot }}/index.html"
-    owner: "{{ nginx_runtime }}"
-    group: "{{ nginx_group }}"
-    mode: "0644"
-  loop: "{{ nginx_vhosts }}"
-  when: (item.add_landing_page | default(false))
-  become: true
-  tags: ["ct-nginx"]
-
-- name: "Copy CSS"
-  ansible.builtin.copy:
-    src: basic.css
-    dest: "{{ item.docroot }}/css"
-    owner: "{{ nginx_runtime }}"
-    group: "{{ nginx_group }}"
-    mode: "0644"
-  loop: "{{ nginx_vhosts }}"
-  become: true
-  tags: ["ct-nginx"]
-
-- name: "Copy favicon"
-  ansible.builtin.copy:
-    dest: "{{ item.docroot }}"
-    group: "{{ nginx_group }}"
-    mode: "0644"
-    owner: "{{ nginx_runtime }}"
-    src: favicon.ico
-  loop: "{{ nginx_vhosts }}"
-  become: true
   tags: ["ct-nginx"]
 
 - name: "Enable vhosts"

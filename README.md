@@ -27,7 +27,7 @@ nginx_vhosts:
 - docroot: /data/apt-mirror/mirror/archive.ubuntu.com
   enabled: true
   fqdn: "example.io"
-  port: 8888         # default nginx_port
+  port: 8888
   redirect: true
   shortname: handy
   ssl:
@@ -41,6 +41,33 @@ nginx_vhosts:
       index: index.html
       root: /var/www/ops
     path: "/"
+#
+- enabled: true
+  fqdn: "dundee.example.com"
+  redirect: true
+  shortname: kxd
+  ssl: {}
+  locations:
+  - comment: "dashboards"
+    path: "/"
+    redirect:
+      uri: "http://ADD_YOUR_ADDR:ADD_YOUR_PORT"
+#
+- docroot: /var/www/ops
+  enabled: true
+  fqdn: "orlando.example.com"
+  redirect: true
+  shortname: ops
+  ssl:
+    cert_site: "dundee.example.com"
+  locations:
+  - comment: "Trading UI"
+    directives:
+      autoindex: "on"
+      index: index.html
+      root: /var/www/ops
+    path: "/"
+
 ```
 
 # --------------------------------
