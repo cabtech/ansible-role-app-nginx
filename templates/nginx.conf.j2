@@ -1,5 +1,5 @@
 # MANAGED_BY_ANSIBLE
-user {{ nginx_runtime }};
+user {{ nginx_runtime }} {{ nginx_group }};
 worker_processes auto;
 pid /run/nginx.pid;
 include {{ nginx_etc_dir }}/modules-enabled/*.conf;
