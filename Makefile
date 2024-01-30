@@ -10,9 +10,10 @@ lint: .ylint .alint
 
 push: lint
 	@mkdir -p /mnt/hgfs/shared/ansible-role-app-nginx
-	rsync -a * /mnt/hgfs/shared/ansible-role-app-nginx
+	rsync -a .config .gitignore [A-z]* /mnt/hgfs/shared/ansible-role-app-nginx
 
 # --------------------------------
 
+.PHONY: clean
 clean:
 	@/bin/rm -f .alint .ylint
