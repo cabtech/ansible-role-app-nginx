@@ -43,7 +43,7 @@
     path: "{{ item.docroot }}/css"
     state: directory
   loop: "{{ nginx_vhosts }}"
-  when: item.docroot is defined
+  when: false  # item.docroot is defined DEPRECATED
   become: true
   tags: ["ct-nginx"]
 
@@ -69,7 +69,7 @@
     group: "{{ nginx_group }}"
     mode: "0644"
   loop: "{{ nginx_vhosts }}"
-  when: item.docroot is defined
+  when: false  # item.docroot is defined DEPRECATED
   become: true
   tags: ["ct-nginx"]
 
@@ -81,7 +81,7 @@
     owner: "{{ nginx_runtime }}"
     src: favicon.ico
   loop: "{{ nginx_vhosts }}"
-  when: item.docroot is defined
+  when: false  # item.docroot is defined DEPRECATED
   become: true
   tags: ["ct-nginx"]
 
